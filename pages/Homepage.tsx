@@ -31,27 +31,27 @@ const InteractiveBlob: React.FC = () => {
     // Physics State
     const blob = {
       x: width / 2,
-      y: height * 0.8, // Start near bottom
+      y: height * 0.85, // Positioned explicitly at the bottom
       vx: 0,
       vy: 0,
-      baseRadius: Math.min(width, height) * 0.35, // Large ambient size
+      baseRadius: Math.min(width, height) * 0.35, // Size
       points: [] as { angle: number; speed: number; offset: number }[]
     };
 
-    // Initialize morphing points
-    const numPoints = 16; // More points for smoother organic shape
+    // Initialize morphing points - Adjusted speeds for visible but slow organic breathing
+    const numPoints = 12; 
     for (let i = 0; i < numPoints; i++) {
       blob.points.push({
         angle: (i / numPoints) * Math.PI * 2,
-        speed: 0.01 + Math.random() * 0.02, // Slow morphing
-        offset: Math.random() * 60
+        speed: 0.03 + Math.random() * 0.05, // Increased slightly so morphing is visible
+        offset: Math.random() * 80
       });
     }
 
     // Interaction State
     let mouse = { x: width / 2, y: height / 2 };
     let isHovering = false;
-    let wanderTarget = { x: Math.random() * width, y: height * 0.5 + Math.random() * (height * 0.5) }; // Bias to bottom half
+    let wanderTarget = { x: Math.random() * width, y: height * 0.8 }; 
     let idleTimer: any;
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -62,9 +62,9 @@ const InteractiveBlob: React.FC = () => {
       clearTimeout(idleTimer);
       idleTimer = setTimeout(() => {
         isHovering = false;
-        // Pick new random target in bottom half when going idle
-        wanderTarget = { x: Math.random() * width, y: height * 0.4 + Math.random() * (height * 0.6) };
-      }, 2500);
+        // Bias target to bottom when idle
+        wanderTarget = { x: Math.random() * width, y: height * 0.7 + Math.random() * (height * 0.3) };
+      }, 3000);
     };
     window.addEventListener('mousemove', handleMouseMove);
 
@@ -72,7 +72,7 @@ const InteractiveBlob: React.FC = () => {
 
     const render = () => {
       ctx.clearRect(0, 0, width, height);
-      time += 0.005; // Slow time
+      time += 0.008; // Time flows to drive the morphing
 
       // --- 1. Movement Physics (Spring System) ---
       let targetX, targetY;
@@ -81,25 +81,26 @@ const InteractiveBlob: React.FC = () => {
         targetX = mouse.x;
         targetY = mouse.y;
       } else {
-        // Autonomous wandering
+        // Autonomous wandering logic
         const dx = wanderTarget.x - blob.x;
         const dy = wanderTarget.y - blob.y;
         const dist = Math.sqrt(dx*dx + dy*dy);
         
-        // Change target if close
-        if (dist < 200) {
+        // Retarget very slowly
+        if (dist < 50 || Math.random() < 0.002) {
           wanderTarget = { 
             x: Math.random() * width, 
-            y: height * 0.4 + Math.random() * (height * 0.6) 
+            y: height * 0.6 + Math.random() * (height * 0.4) 
           };
         }
         targetX = wanderTarget.x;
         targetY = wanderTarget.y;
       }
 
-      // Smooth Spring Physics for "Heavy" feel
-      const spring = isHovering ? 0.008 : 0.002; // More responsive when interacting
-      const friction = 0.94; // Drag
+      // Smooth Spring Physics
+      // Extremely low spring constant for "heavy" slow movement
+      const spring = isHovering ? 0.002 : 0.0005; 
+      const friction = 0.95; 
 
       const ax = (targetX - blob.x) * spring;
       const ay = (targetY - blob.y) * spring;
@@ -116,13 +117,13 @@ const InteractiveBlob: React.FC = () => {
       ctx.beginPath();
       
       const currentPoints = blob.points.map((p) => {
-        // Perlin-like noise using sine stacking
-        const variance = Math.sin(time * p.speed * 4 + p.angle * 2) * 40 
-                       + Math.cos(time * p.speed * 2 + p.angle * 3) * 20;
+        // Sine wave stacking for organic breathing shape
+        const variance = Math.sin(time * p.speed + p.angle) * 30 
+                       + Math.cos(time * p.speed * 0.5 + p.angle * 2) * 20;
         const r = blob.baseRadius + variance;
         
-        // Rotate shape slowly
-        const rot = time * 0.2;
+        // Very slow rotation
+        const rot = time * 0.02;
         return {
            x: blob.x + Math.cos(p.angle + rot) * r,
            y: blob.y + Math.sin(p.angle + rot) * r
@@ -148,11 +149,22 @@ const InteractiveBlob: React.FC = () => {
       
       ctx.closePath();
 
-      // --- 3. Rendering ---
-      const gradient = ctx.createRadialGradient(blob.x, blob.y, 0, blob.x, blob.y, blob.baseRadius * 1.5);
-      gradient.addColorStop(0, 'rgba(66, 133, 244, 0.2)'); // Gemini Blue core
-      gradient.addColorStop(0.5, 'rgba(161, 66, 244, 0.1)'); // Purple mid
-      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)'); // Fade out
+      // --- 3. Rendering (Gemini Aesthetic) ---
+      // Blue/White/Black Gradient
+      // Increased Opacity to ensure visibility
+      const gradient = ctx.createRadialGradient(blob.x, blob.y, 0, blob.x, blob.y, blob.baseRadius * 2);
+      
+      // Core: Bright White/Blue
+      gradient.addColorStop(0, 'rgba(255, 255, 255, 0.4)'); 
+      
+      // Mid: Gemini Blue
+      gradient.addColorStop(0.2, 'rgba(66, 133, 244, 0.3)'); 
+      
+      // Mid-Outer: Deep Blue
+      gradient.addColorStop(0.5, 'rgba(30, 40, 120, 0.1)'); 
+      
+      // Outer: Transparent
+      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
       ctx.fillStyle = gradient;
       ctx.fill();
@@ -174,7 +186,7 @@ const InteractiveBlob: React.FC = () => {
     <canvas 
       ref={canvasRef} 
       className="fixed inset-0 z-0 pointer-events-none w-full h-full"
-      style={{ filter: 'blur(50px)' }} 
+      style={{ filter: 'blur(60px)' }} // Reduced blur from 100px to 60px to keep edges slightly more defined
     />
   );
 };
@@ -250,8 +262,8 @@ const BoidCanvas: React.FC = () => {
       const width = rect.width;
       const height = rect.height;
 
-      // Draw settings
-      ctx.fillStyle = '#1a1a1a'; // Dark color for boids
+      // Draw settings - Updated to match Blue/White theme
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'; // White/Blue tint for boids
 
       for (let boid of boidsRef.current) {
         // --- Boid Logic ---
@@ -769,7 +781,7 @@ const Homepage: React.FC = () => {
           {/* Left Card: Business Problem */}
           <div className="relative w-full max-w-[320px] h-[580px] rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/10 group">
             <img 
-              src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=600" 
+              src="https://i.imgs.ovh/2026/01/05/y7CyD1.jpeg" 
               alt="Office Chaos" 
               className="absolute inset-0 w-full h-full object-cover opacity-60 blur-[2px] scale-110 transition-transform duration-700 group-hover:scale-125" 
             />
