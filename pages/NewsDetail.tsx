@@ -167,8 +167,17 @@ const NewsDetail: React.FC = () => {
         <h3 className="text-lg font-bold text-white mb-8 tracking-wide uppercase">{t('recommended')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[...data.reports, ...data.methodologies].filter(n => n.slug !== slug).slice(0, 3).map(item => (
-            <GlassCard key={item.slug} className="group cursor-pointer border-white/5 hover:border-white/10 transition-all duration-300" hoverEffect={true} noPadding={true}>
-               <div onClick={() => navigate(`/news/${item.slug}`)} className="flex items-center p-4 gap-4">
+            <GlassCard 
+              key={item.slug} 
+              className="group cursor-pointer border-white/5 hover:border-white/10 transition-all duration-300" 
+              hoverEffect={true} 
+              noPadding={true}
+              onClick={() => {
+                navigate(`/news/${item.slug}`);
+                window.scrollTo(0, 0);
+              }}
+            >
+               <div className="flex items-center p-4 gap-4">
                  <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-navy-800">
                    <img src={item.coverImageUrl} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" alt="" />
                  </div>

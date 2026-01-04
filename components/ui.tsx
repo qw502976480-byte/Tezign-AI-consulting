@@ -53,9 +53,16 @@ export const Button: React.FC<ButtonProps> = ({ variant = 'primary', size = 'md'
   );
 };
 
-export const GlassCard: React.FC<{ children: React.ReactNode; className?: string; hoverEffect?: boolean; noPadding?: boolean }> = ({ children, className = '', hoverEffect = false, noPadding = false }) => {
+interface GlassCardProps extends React.HTMLAttributes<HTMLDivElement> {
+  children: React.ReactNode;
+  className?: string;
+  hoverEffect?: boolean;
+  noPadding?: boolean;
+}
+
+export const GlassCard: React.FC<GlassCardProps> = ({ children, className = '', hoverEffect = false, noPadding = false, ...props }) => {
   return (
-    <div className={`gradient-border-wrapper ${hoverEffect ? 'glass-card-hover cursor-pointer' : ''} ${className}`}>
+    <div className={`gradient-border-wrapper ${hoverEffect ? 'glass-card-hover cursor-pointer' : ''} ${className}`} {...props}>
       <div className={`relative h-full w-full bg-navy-900/90 rounded-[inherit] overflow-hidden ${noPadding ? '' : 'p-6'}`}>
          {children}
       </div>
