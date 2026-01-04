@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { getData } from '../data';
-import { GlassCard, Button, Badge, Input } from '../components/ui';
-import { Sparkles, ArrowRight, Bot, ArrowUpRight, Mic, ArrowUp, Play, Code } from 'lucide-react';
+import { Button, Input } from '../components/ui';
+import { Sparkles, ArrowRight, Bot, Mic, ArrowUp } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { LibraryItem } from '../types';
 
@@ -782,7 +782,7 @@ const Homepage: React.FC = () => {
           <div className="relative w-full max-w-[320px] h-[580px] rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/10 group">
             <img 
               src="https://i.imgs.ovh/2026/01/05/y7CyD1.jpeg" 
-              alt="Office Chaos" 
+              alt="Business Problem" 
               className="absolute inset-0 w-full h-full object-cover opacity-60 blur-[2px] scale-110 transition-transform duration-700 group-hover:scale-125" 
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/80" />
