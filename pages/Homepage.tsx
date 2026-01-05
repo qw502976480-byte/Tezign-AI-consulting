@@ -4,6 +4,7 @@ import { getData, searchLibrary } from '../data';
 import { Button, Input } from '../components/ui';
 import { Sparkles, ArrowRight, Bot, Mic, ArrowUp } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useBooking } from '../contexts/BookingContext';
 import { LibraryItem } from '../types';
 
 // --- Interactive Blob Background (High-tech Fluid Motion) ---
@@ -377,6 +378,7 @@ const BoidCanvas: React.FC = () => {
 const Homepage: React.FC = () => {
   const navigate = useNavigate();
   const { lang, t } = useLanguage();
+  const { openBooking } = useBooking();
   const data = getData(lang);
   
   // -- AI Search State --
@@ -528,10 +530,10 @@ const Homepage: React.FC = () => {
         
         <div className="flex flex-col items-center pt-8">
           <Button 
-            onClick={() => navigate('/gate')} 
+            onClick={openBooking} 
             variant="gemini" 
             size="md" 
-            className="text-base px-8 py-3 font-medium"
+            className="text-base px-8 py-3 font-medium group"
           >
             {t('btnBookDemo')}
             <ArrowRight size={16} />
@@ -601,7 +603,7 @@ const Homepage: React.FC = () => {
                     return (
                       <div 
                         key={link.slug} 
-                        onClick={() => navigate(link.type === 'case' ? `/case/${link.slug}` : `/news/${link.slug}`)}
+                        onClick={() => navigate(`/resource/${link.slug}`)}
                         className="group flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 cursor-pointer transition-all"
                       >
                          <span className="font-medium text-slate-200 group-hover:text-white truncate pr-2">{link.title}</span>
@@ -631,7 +633,7 @@ const Homepage: React.FC = () => {
               <div 
                 key={activeCarouselItem.slug} 
                 className="relative h-[400px] lg:h-auto w-full overflow-hidden rounded-2xl group cursor-pointer border border-white/5" 
-                onClick={() => navigate(activeCarouselItem.type === 'case' ? `/case/${activeCarouselItem.slug}` : `/news/${activeCarouselItem.slug}`)}
+                onClick={() => navigate(`/resource/${activeCarouselItem.slug}`)}
               >
                 <img 
                   src={activeCarouselItem.coverImageUrl} 
@@ -666,7 +668,7 @@ const Homepage: React.FC = () => {
             <div className="flex flex-col">
               {staticNewsItems.map((item, index) => (
                 <div key={item.slug} className={`py-4 ${index > 0 ? 'border-t border-slate-800' : ''}`}>
-                   <div className="flex justify-between items-start gap-5 group cursor-pointer" onClick={() => navigate(item.type === 'case' ? `/case/${item.slug}` : `/news/${item.slug}`)}>
+                   <div className="flex justify-between items-start gap-5 group cursor-pointer" onClick={() => navigate(`/resource/${item.slug}`)}>
                      <div className="flex-grow pt-1">
                         <h4 className="text-base font-medium text-slate-200 mb-2 group-hover:text-primary-400 transition-colors line-clamp-2">{item.title}</h4>
                         <div className="flex items-center gap-3 text-xs text-slate-500 font-mono">
@@ -848,7 +850,7 @@ const Homepage: React.FC = () => {
          <div className="relative p-12 md:p-20 rounded-3xl overflow-hidden border border-white/10 bg-navy-900/50">
            <div className="absolute inset-0 bg-glow-radial opacity-30 pointer-events-none" />
            <h2 className="text-3xl md:text-5xl font-medium text-white mb-6 relative z-10">{t('ctaTitle')}</h2>
-           <Button onClick={() => navigate('/gate')} variant="gemini" size="lg" className="text-lg px-12 relative z-10 font-medium">
+           <Button onClick={openBooking} variant="gemini" size="lg" className="text-lg px-12 relative z-10 font-medium group">
              {t('ctaButton')}
            </Button>
          </div>

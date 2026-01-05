@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { Logo } from './ui';
-import { User, Globe, Library, Youtube, Linkedin, Github, Instagram, Bookmark, Settings, LogOut } from 'lucide-react';
+import { User, Globe, Library, Youtube, Linkedin, Github, Instagram, Bookmark, Settings, LogOut, MessageSquare } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -63,7 +63,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               {isAuthenticated ? (
                 <div className="relative group">
                   <button
-                    className="w-9 h-9 flex items-center justify-center bg-slate-800/60 hover:bg-slate-700/60 rounded-full transition-colors"
+                    onClick={() => navigate('/profile')}
+                    className="w-9 h-9 flex items-center justify-center bg-slate-800/60 hover:bg-slate-700/60 rounded-full transition-colors cursor-pointer"
                   >
                     <User size={16} />
                   </button>
@@ -71,13 +72,28 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   {/* Dropdown Menu */}
                   <div className="absolute right-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right z-50 w-48">
                      <div className="bg-navy-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden py-1">
-                        <button className="w-full text-left px-4 py-3 hover:bg-white/5 flex items-center gap-3 text-sm text-slate-300 hover:text-white transition-colors">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); navigate('/profile?tab=account'); }}
+                          className="w-full text-left px-4 py-3 hover:bg-white/5 flex items-center gap-3 text-sm text-slate-300 hover:text-white transition-colors"
+                        >
                            <User size={14} /> {t('account')}
                         </button>
-                        <button className="w-full text-left px-4 py-3 hover:bg-white/5 flex items-center gap-3 text-sm text-slate-300 hover:text-white transition-colors">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); navigate('/profile?tab=bookings'); }}
+                          className="w-full text-left px-4 py-3 hover:bg-white/5 flex items-center gap-3 text-sm text-slate-300 hover:text-white transition-colors"
+                        >
+                           <MessageSquare size={14} /> {t('consultations')}
+                        </button>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); navigate('/profile?tab=bookmarks'); }}
+                          className="w-full text-left px-4 py-3 hover:bg-white/5 flex items-center gap-3 text-sm text-slate-300 hover:text-white transition-colors"
+                        >
                            <Bookmark size={14} /> {t('bookmarks')}
                         </button>
-                        <button className="w-full text-left px-4 py-3 hover:bg-white/5 flex items-center gap-3 text-sm text-slate-300 hover:text-white transition-colors">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); navigate('/profile?tab=settings'); }}
+                          className="w-full text-left px-4 py-3 hover:bg-white/5 flex items-center gap-3 text-sm text-slate-300 hover:text-white transition-colors"
+                        >
                            <Settings size={14} /> {t('settings')}
                         </button>
                         <div className="h-px bg-white/10 my-1" />

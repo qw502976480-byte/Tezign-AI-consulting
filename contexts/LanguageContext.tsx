@@ -26,8 +26,45 @@ const translations = {
     // Auth Dropdown
     account: "Account",
     bookmarks: "Bookmarks",
+    consultations: "Consultations",
     settings: "Settings",
 
+    // Profile Page
+    myProfile: "My Profile",
+    email: "Work Email",
+    company: "Company",
+    editProfile: "Edit Profile",
+    savedItems: "Saved Items",
+    preferences: "Preferences",
+    notifications: "Notifications",
+    notifyDesc: "Receive updates about new cases and reports",
+    privacyDesc: "Manage data sharing and visibility",
+    manage: "Manage",
+    
+    // Profile Consultations
+    upcomingSessions: "Upcoming Sessions",
+    pastSessions: "Past Sessions",
+    noConsultations: "No scheduled sessions found.",
+    status: "Status",
+    date: "Date",
+    time: "Time",
+    confirmed: "Confirmed",
+    completed: "Completed",
+    
+    // Profile Edit
+    nickname: "Display Name",
+    accountName: "Account Name",
+    accountFixed: "Account name cannot be changed",
+    changeAvatar: "Change Avatar",
+    saveChanges: "Save Changes",
+    cancel: "Cancel",
+    changePassword: "Change Password",
+    newPassword: "New Password",
+    confirmPassword: "Confirm Password",
+    passwordUpdated: "Password updated successfully",
+    profileUpdated: "Profile updated successfully",
+    enterPassword: "Enter new password",
+    
     // Homepage Hero
     heroTitle: "Making AI-native consulting understandable and repeatable",
     heroSubtitle: "We translate AI scenarios, ways of working, and operating mechanisms into business practices that teams can understand, discuss, and reuse.",
@@ -127,7 +164,44 @@ const translations = {
     // Auth Dropdown
     account: "账户",
     bookmarks: "收藏",
+    consultations: "预约咨询",
     settings: "设置",
+
+    // Profile Page
+    myProfile: "我的账户",
+    email: "工作邮箱",
+    company: "公司",
+    editProfile: "编辑资料",
+    savedItems: "收藏内容",
+    preferences: "偏好设置",
+    notifications: "通知消息",
+    notifyDesc: "接收关于新案例和报告的更新推送",
+    privacyDesc: "管理数据共享与账户可见性",
+    manage: "管理",
+    
+    // Profile Consultations
+    upcomingSessions: "即将进行的咨询",
+    pastSessions: "历史咨询",
+    noConsultations: "暂无预约记录",
+    status: "状态",
+    date: "日期",
+    time: "时间",
+    confirmed: "已确认",
+    completed: "已完成",
+    
+    // Profile Edit
+    nickname: "用户昵称",
+    accountName: "账户名称",
+    accountFixed: "账户名不可更改",
+    changeAvatar: "更换头像",
+    saveChanges: "保存更改",
+    cancel: "取消",
+    changePassword: "修改密码",
+    newPassword: "新密码",
+    confirmPassword: "确认新密码",
+    passwordUpdated: "密码修改成功",
+    profileUpdated: "资料更新成功",
+    enterPassword: "输入新密码",
 
     // Homepage Hero
     heroTitle: "让 AI-native consulting 变得可理解、可复制",

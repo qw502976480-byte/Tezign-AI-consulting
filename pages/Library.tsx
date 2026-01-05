@@ -4,6 +4,7 @@ import { getData, searchLibrary } from '../data';
 import { Search, ArrowUpRight, Mic, ArrowUp, Bot, Sparkles, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { LibraryItem } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useBooking } from '../contexts/BookingContext';
 import { Input, Button } from '../components/ui';
 
 const ITEMS_PER_PAGE = 12;
@@ -11,6 +12,7 @@ const ITEMS_PER_PAGE = 12;
 const Library: React.FC = () => {
   const navigate = useNavigate();
   const { lang, t } = useLanguage();
+  const { openBooking } = useBooking();
   
   // Search State
   const [query, setQuery] = useState('');
@@ -80,8 +82,6 @@ const Library: React.FC = () => {
       });
       
       // Also store found slugs for the main grid to match
-      // If searchLibrary returns results, we use them.
-      // If no results, we set foundSlugs to empty array to indicate "no results" state in the grid.
       setFoundSlugs(results);
       
     }, 1500);
@@ -175,7 +175,7 @@ const Library: React.FC = () => {
                     return (
                       <div 
                         key={link.slug} 
-                        onClick={() => navigate(link.type === 'case' ? `/case/${link.slug}` : `/news/${link.slug}`)}
+                        onClick={() => navigate(`/resource/${link.slug}`)}
                         className="group flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 cursor-pointer transition-all"
                       >
                          <span className="font-medium text-slate-200 group-hover:text-white truncate pr-2">{link.title}</span>
@@ -195,7 +195,7 @@ const Library: React.FC = () => {
           {currentItems.map((item) => (
             <div 
               key={item.slug} 
-              onClick={() => navigate(item.type === 'case' ? `/case/${item.slug}` : `/news/${item.slug}`)}
+              onClick={() => navigate(`/resource/${item.slug}`)}
               className="group cursor-pointer flex flex-col gap-5 animate-fade-in"
             >
               <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-white/10 bg-navy-800">
@@ -293,7 +293,7 @@ const Library: React.FC = () => {
             <div className="relative p-10 md:p-16 rounded-3xl overflow-hidden border border-white/10 bg-navy-900/50">
                 <div className="absolute inset-0 bg-glow-radial opacity-20 pointer-events-none" />
                 <h2 className="text-3xl md:text-4xl font-medium text-white mb-6 relative z-10">{t('ctaTitle')}</h2>
-                <Button onClick={() => navigate('/gate')} variant="gemini" size="lg" className="text-base px-10 relative z-10 font-medium group">
+                <Button onClick={openBooking} variant="gemini" size="lg" className="text-base px-10 relative z-10 font-medium group">
                     {t('btnBookDemo')} <ArrowRight size={18} />
                 </Button>
             </div>
