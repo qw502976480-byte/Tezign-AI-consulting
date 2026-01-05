@@ -90,7 +90,8 @@ const translations = {
     share: "Share this case",
     bookmark: "Bookmark",
     bookmarked: "Bookmarked",
-    noResults: "No results found matching your criteria.",
+    noResults: "No results found matching your query.",
+    clearSearch: "Clear search",
     prevPage: "Previous",
     nextPage: "Next",
     
@@ -149,8 +150,8 @@ const translations = {
         "不同行业在 AI 场景上的差异在哪里？",
         "AI-native 工作方式与传统流程的本质区别是什么？"
     ],
-    aiResponseTitle: "AI 概览",
-    aiResponseText: "基于您的知识库，AI 正通过从零星使用向系统集成转变来重塑工作流程。关键模式包括信号转产品引擎和自动化内容供应链。",
+    aiResponseTitle: "AI 总结",
+    aiResponseText: "根据您的资料库，AI 目前正通过从零星使用转向系统性集成来改变工作流程。关键模式包括“信号到产品”引擎和自动化内容供应链。",
 
     // Recommendations
     recsTitle: "最新推荐",
@@ -190,7 +191,8 @@ const translations = {
     share: "分享此案例",
     bookmark: "收藏",
     bookmarked: "已收藏",
-    noResults: "未找到匹配的结果。",
+    noResults: "未找到与您的查询匹配的结果。",
+    clearSearch: "清除搜索",
     prevPage: "上一页",
     nextPage: "下一页",
 

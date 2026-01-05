@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { getData } from '../data';
+import { getData, searchLibrary } from '../data';
 import { Button, Input } from '../components/ui';
 import { Sparkles, ArrowRight, Bot, Mic, ArrowUp } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -382,7 +382,7 @@ const Homepage: React.FC = () => {
   // -- AI Search State --
   const [query, setQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const [searchResult, setSearchResult] = useState<{text: string, links: LibraryItem[]} | null>(null);
+  const [searchResult, setSearchResult] = useState<{slugs: string[]} | null>(null);
   const [animatedPlaceholder, setAnimatedPlaceholder] = useState('');
   
   // -- Latest News State --
@@ -406,14 +406,12 @@ const Homepage: React.FC = () => {
     setSearchResult(null);
     setTimeout(() => {
       setIsSearching(false);
-      const relevantDocs = allItems.filter(i => 
-        i.title.toLowerCase().includes(query.toLowerCase()) || 
-        i.subtitle.toLowerCase().includes(query.toLowerCase())
-      ).slice(0, 3);
-      const fallbackDocs = allItems.slice(0, 3);
+      
+      const results = searchLibrary(query);
+      const displaySlugs = results.length > 0 ? results.slice(0, 3) : allItems.slice(0, 3).map(i => i.slug);
+      
       setSearchResult({
-        text: t('aiResponseText') as string,
-        links: relevantDocs.length > 0 ? relevantDocs : fallbackDocs
+        slugs: displaySlugs
       });
     }, 1500);
   };
@@ -533,27 +531,28 @@ const Homepage: React.FC = () => {
             onClick={() => navigate('/gate')} 
             variant="gemini" 
             size="md" 
-            className="text-base px-8 py-3 group flex items-center gap-2.5 font-medium"
+            className="text-base px-8 py-3 font-medium"
           >
             {t('btnBookDemo')}
-            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            <ArrowRight size={16} />
           </Button>
         </div>
       </section>
 
       {/* 2. Interactive AI Search */}
       <section className="px-4 max-w-3xl mx-auto mb-20 relative z-20">
-        <div className="bg-navy-900 border border-slate-800/80 rounded-2xl p-2 shadow-2xl shadow-black/60">
+        <div className="bg-navy-900 border border-slate-800/80 rounded-2xl p-2 shadow-2xl shadow-black/60 transition-all duration-300 focus-within:shadow-gemini-ultra/20 focus-within:border-slate-700 hover:border-slate-700">
            <form onSubmit={handleSearch} className="relative flex items-center">
               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gemini-ultra pointer-events-none">
                 {isSearching ? <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" /> : <Bot size={20} />}
               </div>
               <Input 
                 id="ai-search"
+                variant="ghost"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={animatedPlaceholder}
-                className="w-full bg-transparent border-none text-base py-3 pl-12 pr-28 rounded-lg focus:ring-0 placeholder:text-slate-500 transition-all font-normal"
+                className="w-full bg-transparent border-none text-base py-3 pl-12 pr-28 rounded-lg focus:ring-0 placeholder:text-slate-500 font-normal"
                 autoComplete="off"
               />
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
@@ -577,7 +576,7 @@ const Homepage: React.FC = () => {
         </div>
 
         {/* Search Results */}
-        <div className="mt-6 min-h-[60px] transition-all">
+        <div className={`mt-6 transition-all duration-500 ease-out ${searchResult ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}`}>
           {searchResult && (
              <div className="glass-panel rounded-2xl p-6 animate-fade-in border-gemini-pro/20">
                 <div className="flex items-start gap-4 mb-6">
@@ -592,20 +591,24 @@ const Homepage: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold text-gemini-pro uppercase tracking-wider mb-2">{t('aiResponseTitle')}</h3>
-                    <p className="text-slate-300 leading-relaxed font-normal">{searchResult.text}</p>
+                    <p className="text-slate-300 leading-relaxed font-normal">{t('aiResponseText')}</p>
                   </div>
                 </div>
                 <div className="grid gap-3 pl-12">
-                  {searchResult.links.map(link => (
-                    <div 
-                      key={link.slug} 
-                      onClick={() => navigate(link.type === 'case' ? `/case/${link.slug}` : `/news/${link.slug}`)}
-                      className="group flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 cursor-pointer transition-all"
-                    >
-                       <span className="font-medium text-slate-200 group-hover:text-white truncate">{link.title}</span>
-                       <ArrowRight size={14} className="text-slate-500 group-hover:text-white opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
-                    </div>
-                  ))}
+                  {searchResult.slugs.map(slug => {
+                    const link = allItems.find(item => item.slug === slug);
+                    if (!link) return null;
+                    return (
+                      <div 
+                        key={link.slug} 
+                        onClick={() => navigate(link.type === 'case' ? `/case/${link.slug}` : `/news/${link.slug}`)}
+                        className="group flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 cursor-pointer transition-all"
+                      >
+                         <span className="font-medium text-slate-200 group-hover:text-white truncate pr-2">{link.title}</span>
+                         <ArrowRight size={14} className="text-slate-500 group-hover:text-white opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all flex-shrink-0" />
+                      </div>
+                    );
+                  })}
                 </div>
              </div>
           )}

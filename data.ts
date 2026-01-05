@@ -117,6 +117,54 @@ const announcementsEn: LibraryItem[] = [
   { slug: '2026-planning', type: 'announcement', title: "2026 Resource Planning Released", subtitle: "Focusing on judgment, collaboration, and running.", updatedAt: "2026-01-02", readTime: "2", tags: ["Announcement"], coverImageUrl: "https://i.imgs.ovh/2025/12/29/C1cju9.jpeg", contentBlocks: genContent("2026 Planning", "Announcement") },
 ];
 
+// --- Search Logic ---
+// Combine all CN and EN items to build a bilingual index
+const allCnItems = [...casesCn, ...reportsCn, ...methodsCn, ...announcementsCn];
+const allEnItems = [...casesEn, ...reportsEn, ...methodsEn, ...announcementsEn];
+
+const bilingualIndex = allCnItems.map(cnItem => {
+  const enItem = allEnItems.find(i => i.slug === cnItem.slug);
+  // Fallback if EN item missing (though they match 1:1 in this mock data)
+  const enTitle = enItem?.title.toLowerCase() || '';
+  const enSubtitle = enItem?.subtitle.toLowerCase() || '';
+  const enTags = enItem?.tags.join(' ').toLowerCase() || '';
+  
+  const cnTitle = cnItem.title.toLowerCase();
+  const cnSubtitle = cnItem.subtitle.toLowerCase();
+  const cnTags = cnItem.tags.join(' ').toLowerCase();
+
+  return {
+    slug: cnItem.slug,
+    cnTitle,
+    enTitle,
+    fullText: `${cnTitle} ${cnSubtitle} ${cnTags} ${enTitle} ${enSubtitle} ${enTags}`
+  };
+});
+
+export const searchLibrary = (query: string): string[] => {
+  const q = query.toLowerCase().trim();
+  if (!q) return [];
+
+  const scored = bilingualIndex.map(item => {
+    let score = 0;
+    // High priority: Title match
+    if (item.cnTitle.includes(q) || item.enTitle.includes(q)) {
+      score += 10;
+    }
+    // Medium priority: Full text match
+    if (item.fullText.includes(q)) {
+      score += 1;
+    }
+    return { slug: item.slug, score };
+  });
+
+  // Filter out non-matches and sort by score
+  return scored
+    .filter(i => i.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .map(i => i.slug);
+};
+
 export const getData = (lang: 'en' | 'cn') => {
   if (lang === 'cn') {
     return {

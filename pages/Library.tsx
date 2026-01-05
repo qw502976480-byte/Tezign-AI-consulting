@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getData } from '../data';
+import { getData, searchLibrary } from '../data';
 import { Search, ArrowUpRight, Mic, ArrowUp, Bot, Sparkles, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { LibraryItem } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -14,9 +14,9 @@ const Library: React.FC = () => {
   
   // Search State
   const [query, setQuery] = useState('');
-  const [submittedQuery, setSubmittedQuery] = useState('');
+  const [foundSlugs, setFoundSlugs] = useState<string[] | null>(null); // Stores IDs of items found in search to persist across langs
   const [isSearching, setIsSearching] = useState(false);
-  const [searchResult, setSearchResult] = useState<{text: string, links: LibraryItem[]} | null>(null);
+  const [searchResult, setSearchResult] = useState<{slugs: string[]} | null>(null); // Stores IDs for AI Card
   const [animatedPlaceholder, setAnimatedPlaceholder] = useState('');
 
   // Pagination State
@@ -65,30 +65,31 @@ const Library: React.FC = () => {
     if (!query.trim()) return;
     setIsSearching(true);
     setSearchResult(null);
-    setSubmittedQuery('');
+    setFoundSlugs(null);
+    
     setTimeout(() => {
       setIsSearching(false);
-      setSubmittedQuery(query);
       setCurrentPage(1);
-      const relevantDocs = sortedItems.filter(item => 
-        item.title.toLowerCase().includes(query.toLowerCase()) ||
-        item.subtitle.toLowerCase().includes(query.toLowerCase())
-      );
-      const displayDocs = relevantDocs.length > 0 ? relevantDocs.slice(0, 3) : sortedItems.slice(0, 3);
+      
+      const results = searchLibrary(query);
+      const displaySlugs = results.length > 0 ? results.slice(0, 3) : sortedItems.slice(0, 3).map(i => i.slug);
+      
+      // Store slugs so we can re-render correct localized items even if language changes
       setSearchResult({
-        text: t('aiResponseText') as string,
-        links: displayDocs
+        slugs: displaySlugs
       });
+      
+      // Also store found slugs for the main grid to match
+      // If searchLibrary returns results, we use them.
+      // If no results, we set foundSlugs to empty array to indicate "no results" state in the grid.
+      setFoundSlugs(results);
+      
     }, 1500);
   };
 
-  const filteredItems = sortedItems.filter(item => {
-    if (!submittedQuery) return true;
-    const matchesTitle = item.title.toLowerCase().includes(submittedQuery.toLowerCase());
-    const matchesSubtitle = item.subtitle.toLowerCase().includes(submittedQuery.toLowerCase());
-    const matchesTag = item.tags.some(t => t.toLowerCase().includes(submittedQuery.toLowerCase()));
-    return matchesTitle || matchesSubtitle || matchesTag;
-  });
+  const filteredItems = foundSlugs !== null 
+    ? sortedItems.filter(item => foundSlugs.includes(item.slug))
+    : sortedItems;
 
   const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -113,18 +114,19 @@ const Library: React.FC = () => {
       </div>
 
       {/* 2. GPT Interactive Input Box */}
-      <div className="sticky top-6 z-30 max-w-3xl mx-auto mb-16 animate-fade-in animation-delay-200">
-        <div className="bg-navy-900 border border-slate-800/80 rounded-2xl p-2 shadow-2xl shadow-black/60 backdrop-blur-xl">
+      <div className="sticky top-20 z-30 max-w-3xl mx-auto mb-16 animate-fade-in animation-delay-200">
+        <div className="bg-navy-900 border border-slate-800/80 rounded-2xl p-2 shadow-2xl shadow-black/60 backdrop-blur-xl transition-all duration-300 focus-within:shadow-gemini-ultra/20 focus-within:border-slate-700 hover:border-slate-700">
            <form onSubmit={handleSearch} className="relative flex items-center">
               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gemini-ultra pointer-events-none">
                 {isSearching ? <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" /> : <Bot size={20} />}
               </div>
               <Input 
                 id="ai-library-search"
+                variant="ghost"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={animatedPlaceholder}
-                className="w-full bg-transparent border-none text-base py-3 pl-12 pr-28 rounded-lg focus:ring-0 placeholder:text-slate-500 transition-all font-normal"
+                className="w-full bg-transparent border-none text-base py-3 pl-12 pr-28 rounded-lg focus:ring-0 placeholder:text-slate-500 font-normal"
                 autoComplete="off"
               />
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
@@ -148,7 +150,7 @@ const Library: React.FC = () => {
         </div>
 
         {/* AI Search Result Card */}
-        <div className={`mt-6 transition-all duration-500 ease-out ${searchResult ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none absolute w-full'}`}>
+        <div className={`mt-6 transition-all duration-500 ease-out ${searchResult ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}`}>
           {searchResult && (
              <div className="glass-panel rounded-2xl p-6 border-gemini-pro/20">
                 <div className="flex items-start gap-4 mb-4">
@@ -163,8 +165,24 @@ const Library: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold text-gemini-pro uppercase tracking-wider mb-2">{t('aiResponseTitle')}</h3>
-                    <p className="text-slate-300 leading-relaxed font-normal">{searchResult.text}</p>
+                    <p className="text-slate-300 leading-relaxed font-normal">{t('aiResponseText')}</p>
                   </div>
+                </div>
+                <div className="grid gap-3 pl-12">
+                   {searchResult.slugs.map(slug => {
+                    const link = sortedItems.find(item => item.slug === slug);
+                    if (!link) return null;
+                    return (
+                      <div 
+                        key={link.slug} 
+                        onClick={() => navigate(link.type === 'case' ? `/case/${link.slug}` : `/news/${link.slug}`)}
+                        className="group flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 cursor-pointer transition-all"
+                      >
+                         <span className="font-medium text-slate-200 group-hover:text-white truncate pr-2">{link.title}</span>
+                         <ArrowRight size={14} className="text-slate-500 group-hover:text-white opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all flex-shrink-0" />
+                      </div>
+                    );
+                  })}
                 </div>
              </div>
           )}
@@ -225,9 +243,9 @@ const Library: React.FC = () => {
               <Search size={24} />
             </div>
             <p className="text-lg text-slate-400 font-normal">{t('noResults')}</p>
-            {submittedQuery && (
-                <button onClick={() => { setQuery(''); setSubmittedQuery(''); setSearchResult(null); }} className="mt-4 text-primary-400 hover:text-white underline text-sm transition-colors">
-                    Clear search
+            {foundSlugs !== null && (
+                <button onClick={() => { setQuery(''); setFoundSlugs(null); setSearchResult(null); }} className="mt-4 text-primary-400 hover:text-white underline text-sm transition-colors">
+                    {t('clearSearch')}
                 </button>
             )}
           </div>
@@ -276,7 +294,7 @@ const Library: React.FC = () => {
                 <div className="absolute inset-0 bg-glow-radial opacity-20 pointer-events-none" />
                 <h2 className="text-3xl md:text-4xl font-medium text-white mb-6 relative z-10">{t('ctaTitle')}</h2>
                 <Button onClick={() => navigate('/gate')} variant="gemini" size="lg" className="text-base px-10 relative z-10 font-medium group">
-                    {t('btnBookDemo')} <ArrowRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
+                    {t('btnBookDemo')} <ArrowRight size={18} />
                 </Button>
             </div>
         </section>

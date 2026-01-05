@@ -171,7 +171,7 @@ const CaseDetail: React.FC = () => {
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gemini-ultra/20 rounded-full blur-[40px] -z-10 group-hover:bg-gemini-ultra/30 transition-colors" />
                 <h3 className="text-white font-bold text-sm mb-4 leading-relaxed relative z-10">{t('ctaTitle')}</h3>
                 <Button onClick={() => navigate('/gate')} variant="gemini" className="w-full text-xs font-bold h-9 group">
-                    {t('btnBookDemo')} <ArrowRight size={14} className="ml-2 group-hover:translate-x-1 transition-transform" />
+                    {t('btnBookDemo')} <ArrowRight size={14} />
                 </Button>
             </div>
 
