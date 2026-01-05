@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { X, ChevronLeft, ChevronRight, CheckCircle, Calendar as CalendarIcon, Clock } from 'lucide-react';
 import { Button } from '../components/ui';
 import { useAuth } from './AuthContext';
+import { useLanguage } from './LanguageContext';
 
 interface BookingContextType {
   isBookingOpen: boolean;
@@ -11,8 +12,6 @@ interface BookingContextType {
 
 const BookingContext = createContext<BookingContextType | undefined>(undefined);
 
-// --- Calendar Logic Helper ---
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const TIME_SLOTS = [
   '10:00 - 11:00',
   '11:00 - 12:00',
@@ -25,6 +24,7 @@ const TIME_SLOTS = [
 export const BookingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { addBooking } = useAuth();
+  const { lang, t } = useLanguage();
   
   // Booking State
   const [step, setStep] = useState<'date' | 'success'>('date');
@@ -60,6 +60,9 @@ export const BookingProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   // --- Calendar Render Helpers ---
+  const locale = lang === 'cn' ? 'zh-CN' : 'en-US';
+  const CALENDAR_DAYS = t('calendarDaysShort') as string[];
+
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
@@ -107,7 +110,7 @@ export const BookingProvider: React.FC<{ children: ReactNode }> = ({ children })
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-white/5 bg-white/5">
               <h2 className="text-xl font-medium text-white tracking-tight">
-                {step === 'success' ? 'Booking Confirmed' : 'Schedule a Consultation'}
+                {step === 'success' ? t('bookingConfirmed') : t('scheduleConsultation')}
               </h2>
               <button 
                 onClick={closeBooking}
@@ -125,7 +128,7 @@ export const BookingProvider: React.FC<{ children: ReactNode }> = ({ children })
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-sm font-semibold text-white">
-                        {currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
+                        {currentMonth.toLocaleString(locale, { month: 'long', year: 'numeric' })}
                       </h3>
                       <div className="flex gap-1">
                         <button onClick={() => changeMonth(-1)} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-white disabled:opacity-30" disabled={currentMonth.getMonth() === today.getMonth() && currentMonth.getFullYear() === today.getFullYear()}>
@@ -138,7 +141,7 @@ export const BookingProvider: React.FC<{ children: ReactNode }> = ({ children })
                     </div>
 
                     <div className="grid grid-cols-7 gap-1 mb-2">
-                      {DAYS.map(d => (
+                      {CALENDAR_DAYS.map(d => (
                         <div key={d} className="text-center text-[10px] uppercase font-bold text-slate-500 py-1">
                           {d}
                         </div>
@@ -179,11 +182,11 @@ export const BookingProvider: React.FC<{ children: ReactNode }> = ({ children })
                   {/* Right: Time Slots */}
                   <div className="flex-1 border-t md:border-t-0 md:border-l border-white/10 pt-6 md:pt-0 md:pl-8">
                     <div className="mb-4">
-                      <h3 className="text-sm font-semibold text-white mb-1">Select Time</h3>
+                      <h3 className="text-sm font-semibold text-white mb-1">{t('selectTime')}</h3>
                       <p className="text-xs text-slate-500">
                         {selectedDate 
-                          ? selectedDate.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })
-                          : 'Please select a date first'}
+                          ? selectedDate.toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric' })
+                          : t('pleaseSelectDate')}
                       </p>
                     </div>
 
@@ -215,7 +218,7 @@ export const BookingProvider: React.FC<{ children: ReactNode }> = ({ children })
                         disabled={!selectedDate || !selectedSlot}
                         onClick={handleSubmit}
                       >
-                        Confirm Booking
+                        {t('confirmBooking')}
                       </Button>
                     </div>
                   </div>
@@ -225,12 +228,16 @@ export const BookingProvider: React.FC<{ children: ReactNode }> = ({ children })
                    <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mb-6 text-green-500 border border-green-500/20 shadow-[0_0_30px_rgba(34,197,94,0.2)]">
                      <CheckCircle size={32} />
                    </div>
-                   <h3 className="text-2xl font-semibold text-white mb-2">Booking Confirmed!</h3>
+                   <h3 className="text-2xl font-semibold text-white mb-2">{t('bookingConfirmed')}!</h3>
                    <p className="text-slate-400 max-w-sm mb-8">
-                     We have scheduled your session on <span className="text-white font-medium">{selectedDate?.toLocaleDateString()}</span> at <span className="text-white font-medium">{selectedSlot}</span>. A calendar invitation has been sent to your email.
+                     {t('bookingSuccessMsg1')}
+                     <span className="text-white font-medium">{selectedDate?.toLocaleDateString(locale)}</span>
+                     {t('bookingSuccessMsg2')}
+                     <span className="text-white font-medium">{selectedSlot}</span>
+                     {t('bookingSuccessMsg3')}
                    </p>
                    <Button variant="outline" onClick={closeBooking} className="border-white/10">
-                     Back to browsing
+                     {t('backToBrowsing')}
                    </Button>
                 </div>
               )}

@@ -146,6 +146,18 @@ const translations = {
     diveDeeper: "Dive deeper into our strategic case studies to see how these signals apply to real business problems.",
     browseCases: "Browse Cases",
     listen: "Listen to summary",
+
+    // Booking Modal
+    scheduleConsultation: "Schedule a Consultation",
+    bookingConfirmed: "Booking Confirmed",
+    selectTime: "Select Time",
+    pleaseSelectDate: "Please select a date first",
+    confirmBooking: "Confirm Booking",
+    bookingSuccessMsg1: "We have scheduled your session on ",
+    bookingSuccessMsg2: " at ",
+    bookingSuccessMsg3: ". A calendar invitation has been sent to your email.",
+    backToBrowsing: "Back to browsing",
+    calendarDaysShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
   },
   cn: {
     // Nav & General
@@ -284,6 +296,18 @@ const translations = {
     diveDeeper: "深入了解我们的战略案例，看这些信号如何应用于实际商业问题。",
     browseCases: "浏览案例",
     listen: "收听摘要",
+
+    // Booking Modal
+    scheduleConsultation: "预约咨询",
+    bookingConfirmed: "预约已确认",
+    selectTime: "选择时间",
+    pleaseSelectDate: "请先选择日期",
+    confirmBooking: "确认预约",
+    bookingSuccessMsg1: "我们已为您安排了在 ",
+    bookingSuccessMsg2: " ",
+    bookingSuccessMsg3: " 的会议。日历邀请已发送至您的邮箱。",
+    backToBrowsing: "返回浏览",
+    calendarDaysShort: ["日", "一", "二", "三", "四", "五", "六"],
   }
 };
 
