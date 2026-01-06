@@ -688,12 +688,12 @@ const Homepage: React.FC = () => {
         </div>
       </section>
 
-      {/* 4. Capabilities Section */}
+      {/*
+      // 4. Capabilities Section
       <section className="py-24 px-4 sm:px-6 lg:px-8 text-center">
         <h2 className="text-3xl md:text-5xl font-medium text-white mb-16 tracking-tight">{t('capabilitiesTitle')}</h2>
         <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
           
-          {/* Shared Gradient Defs */}
           <svg className="absolute w-0 h-0" aria-hidden="true">
             <defs>
               <linearGradient id="geminiShapeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -704,13 +704,13 @@ const Homepage: React.FC = () => {
             </defs>
           </svg>
 
-          {/* Diagnose: Hexagon (SVG) */}
+          
           <div className="flex flex-col items-center group">
             <div className="relative w-44 h-44 mb-6 flex items-center justify-center">
-              {/* Back Glow */}
+              
               <div className="absolute inset-0 bg-gemini-ultra/20 blur-[40px] opacity-40 group-hover:opacity-60 transition-opacity rounded-full" />
               
-              {/* SVG Shape */}
+              
               <svg width="176" height="176" viewBox="0 0 176 176" fill="none" className="relative z-10 w-full h-full">
                 <path 
                   d={hexagonPath} 
@@ -726,13 +726,13 @@ const Homepage: React.FC = () => {
             <p className="text-slate-400 max-w-xs font-normal">{t('diagnoseDesc')}</p>
           </div>
 
-          {/* Design: Triangle (SVG) */}
+          
           <div className="flex flex-col items-center group">
             <div className="relative w-44 h-44 mb-6 flex items-center justify-center">
-              {/* Back Glow */}
+              
               <div className="absolute inset-0 bg-gemini-pro/20 blur-[40px] opacity-40 group-hover:opacity-60 transition-opacity rounded-full" />
               
-              {/* SVG Shape */}
+              
               <svg width="176" height="176" viewBox="0 0 176 176" fill="none" className="relative z-10 w-full h-full">
                 <path 
                   d={trianglePathSafe} 
@@ -748,13 +748,13 @@ const Homepage: React.FC = () => {
             <p className="text-slate-400 max-w-xs font-normal">{t('designDesc')}</p>
           </div>
 
-          {/* Operate: Circle (SVG) */}
+          
           <div className="flex flex-col items-center group">
             <div className="relative w-44 h-44 mb-6 flex items-center justify-center">
-              {/* Back Glow */}
+              
               <div className="absolute inset-0 bg-gemini-nano/20 blur-[40px] opacity-40 group-hover:opacity-60 transition-opacity rounded-full" />
               
-              {/* SVG Shape */}
+              
               <svg width="176" height="176" viewBox="0 0 176 176" fill="none" className="relative z-10 w-full h-full">
                 <circle 
                   cx="88" 
@@ -774,7 +774,8 @@ const Homepage: React.FC = () => {
         </div>
       </section>
 
-      {/* 5. Multimodal Section */}
+      
+      // 5. Multimodal Section
       <section className="py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
         <div className="text-center max-w-4xl mx-auto mb-20">
           <h2 className="text-3xl md:text-5xl font-medium text-white tracking-tight mb-6">{t('multimodalTitle')}</h2>
@@ -783,7 +784,7 @@ const Homepage: React.FC = () => {
 
         <div className="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-12 max-w-5xl mx-auto relative">
           
-          {/* Left Card: Business Problem */}
+          
           <div className="relative w-full max-w-[320px] h-[580px] rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/10 group">
             <img 
               src="https://i.imgs.ovh/2026/01/05/y7CyD1.jpeg" 
@@ -803,12 +804,12 @@ const Homepage: React.FC = () => {
             </div>
           </div>
 
-          {/* Transition Arrow */}
+          
           <div className="text-slate-500 md:rotate-0 rotate-90 flex-shrink-0">
             <ArrowRight size={32} strokeWidth={1.5} />
           </div>
 
-          {/* Right Card: AI Way of Working */}
+          
           <div className="relative w-full max-w-[320px] h-[580px] rounded-[2.5rem] bg-[#050505] border border-slate-800 shadow-2xl flex flex-col p-6 overflow-hidden">
               <div className="absolute -top-[100px] -right-[100px] w-[200px] h-[200px] bg-gemini-ultra/20 blur-[80px] pointer-events-none" />
 
@@ -821,7 +822,7 @@ const Homepage: React.FC = () => {
               </div>
 
               <div className="relative w-full h-40 bg-[#a8c7fa] rounded-2xl mb-4 overflow-hidden border border-white/5 flex-shrink-0 group">
-                 {/* Interactive Boids Area */}
+                 
                  <BoidCanvas />
                  <div className="absolute bottom-2 right-2 bg-black/20 backdrop-blur-md px-2 py-1 rounded text-[10px] text-black font-mono font-bold uppercase pointer-events-none">
                     Running...
@@ -844,8 +845,8 @@ const Homepage: React.FC = () => {
 
         </div>
       </section>
-
-      {/* 8. CTA */}
+      
+      // 8. CTA
       <section className="max-w-4xl mx-auto px-4 mb-32 text-center">
          <div className="relative p-12 md:p-20 rounded-3xl overflow-hidden border border-white/10 bg-navy-900/50">
            <div className="absolute inset-0 bg-glow-radial opacity-30 pointer-events-none" />
@@ -855,6 +856,7 @@ const Homepage: React.FC = () => {
            </Button>
          </div>
       </section>
+      */}
 
     </div>
   );
