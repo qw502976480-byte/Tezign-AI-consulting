@@ -132,7 +132,7 @@ const translations = {
     prevPage: "Previous",
     nextPage: "Next",
     
-    // Gate
+    // Gate / Auth
     unlockTitle: "Unlock full access",
     unlockSubtitle: "Join 10,000+ leaders getting our latest deep-dive cases and market signals.",
     namePlaceholder: "Full Name",
@@ -140,6 +140,62 @@ const translations = {
     interestsLabel: "Select your interests",
     unlockButton: "Unlock Library",
     alreadyAccess: "I already have access",
+    
+    // Gate - Signup Flow
+    createAccount: "Create Account",
+    contactInfo: "Contact Info",
+    mobileNumber: "Mobile Number",
+    userType: "User Type",
+    personal: "Personal",
+    enterprise: "Enterprise",
+    companyName: "Company Name",
+    usageScenarios: "Usage Scenarios",
+    selectMultiple: "Select all that apply (Multiple)",
+    interests: "Interests",
+    selectTopics: "Select topics (Multiple)",
+    painPoints: "Pain Points",
+    challengesPrompt: "What specific challenges are you facing?",
+    describePlaceholder: "Describe here...",
+    skip: "Skip",
+    next: "Next",
+    complete: "Complete",
+    welcomeBack: "Welcome Back",
+    signInSubtitle: "Sign in to access Tezign AI Consulting",
+    accountNamePlaceholder: "Account Name/Email",
+    passwordPlaceholder: "Password",
+    newHere: "New here?",
+    createAccountAction: "Create an account",
+    fillAllFields: "Please fill in all required fields.",
+    enterCredentials: "Please enter both account and password.",
+    
+    // New Fields & Lists
+    verificationCode: "Verification Code",
+    sendCode: "Send Code",
+    resendCode: "Resend",
+    department: "Department",
+    jobTitle: "Job Title",
+    profession: "Profession / Identity",
+    country: "Country",
+    city: "City",
+    userDetails: "Details",
+    selectCountry: "Select Country",
+    selectCity: "Select City",
+    
+    countriesList: ["China", "United States", "United Kingdom", "Singapore", "Japan", "Germany", "France", "Canada", "Australia", "Other"],
+    citiesListCN: ["Shanghai", "Beijing", "Shenzhen", "Guangzhou", "Hangzhou", "Chengdu", "Nanjing", "Wuhan", "Other"],
+    citiesListUS: ["New York", "San Francisco", "Los Angeles", "Chicago", "Seattle", "Boston", "Other"],
+    citiesListOther: ["London", "Tokyo", "Singapore", "Berlin", "Paris", "Toronto", "Sydney", "Other"],
+    
+    scenariosList: [
+      "Strategic Planning", "Content Production", "Market Research", 
+      "Product Innovation", "Customer Service", "Data Analysis",
+      "Competitor Monitoring", "Trend Spotting"
+    ],
+    interestsList: [
+      "Product Innovation", "Brand Strategy", "Retail Growth", 
+      "Food & Beverage", "Luxury", "AI Ops", 
+      "Consumer Insights", "Social Listening", "Competitive Intelligence"
+    ],
 
     // Detail
     enjoyed: "Enjoyed this update?",
@@ -286,10 +342,66 @@ const translations = {
     unlockTitle: "解锁完整内容",
     unlockSubtitle: "加入10,000+行业领袖，获取最新深度案例与市场信号。",
     namePlaceholder: "您的姓名",
-    emailPlaceholder: "工作邮箱",
+    emailPlaceholder: "邮箱地址",
     interestsLabel: "选择您感兴趣的领域",
     unlockButton: "立即解锁",
     alreadyAccess: "我已有权限",
+    
+    // Gate - Signup Flow
+    createAccount: "创建账户",
+    contactInfo: "联系信息",
+    mobileNumber: "手机号码",
+    userType: "用户类型",
+    personal: "个人用户",
+    enterprise: "企业用户",
+    companyName: "公司名称",
+    usageScenarios: "使用场景",
+    selectMultiple: "请选择（可多选）",
+    interests: "兴趣领域",
+    selectTopics: "请选择话题（可多选）",
+    painPoints: "痛点与挑战",
+    challengesPrompt: "您面临的具体挑战是什么？",
+    describePlaceholder: "在此描述...",
+    skip: "跳过",
+    next: "下一步",
+    complete: "完成",
+    welcomeBack: "欢迎回来",
+    signInSubtitle: "登录以访问特赞 AI 咨询",
+    accountNamePlaceholder: "账户名/邮箱",
+    passwordPlaceholder: "密码",
+    newHere: "新用户？",
+    createAccountAction: "注册账户",
+    fillAllFields: "请填写所有必填项。",
+    enterCredentials: "请输入账号和密码。",
+
+    // New Fields & Lists
+    verificationCode: "验证码",
+    sendCode: "发送验证码",
+    resendCode: "重新发送",
+    department: "部门",
+    jobTitle: "职位",
+    profession: "职业 / 身份",
+    country: "所在国家",
+    city: "所在城市",
+    userDetails: "详细信息",
+    selectCountry: "选择国家",
+    selectCity: "选择城市",
+
+    countriesList: ["中国", "美国", "英国", "新加坡", "日本", "德国", "法国", "加拿大", "澳大利亚", "其他"],
+    citiesListCN: ["上海", "北京", "深圳", "广州", "杭州", "成都", "南京", "武汉", "其他"],
+    citiesListUS: ["纽约", "旧金山", "洛杉矶", "芝加哥", "西雅图", "波士顿", "其他"],
+    citiesListOther: ["伦敦", "东京", "新加坡", "柏林", "巴黎", "多伦多", "悉尼", "其他"],
+
+    scenariosList: [
+      "战略规划", "内容生产", "市场研究", 
+      "产品创新", "客户服务", "数据分析",
+      "竞品监测", "趋势发现"
+    ],
+    interestsList: [
+      "产品创新", "品牌战略", "零售增长", 
+      "食品饮料", "奢侈品", "AI 运营", 
+      "消费者洞察", "社媒聆听", "竞争情报"
+    ],
 
     // Detail
     enjoyed: "喜欢这篇更新吗？",

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { X, ChevronLeft, ChevronRight, CheckCircle, Calendar as CalendarIcon, Clock } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, CheckCircle, Calendar as CalendarIcon, Clock, Globe } from 'lucide-react';
 import { Button } from '../components/ui';
 import { useAuth } from './AuthContext';
 import { useLanguage } from './LanguageContext';
@@ -19,6 +19,25 @@ const TIME_SLOTS = [
   '15:00 - 16:00',
   '16:00 - 17:00',
   '17:00 - 18:00'
+];
+
+// Chinese Holidays for 2025 and 2026
+const CN_HOLIDAYS = [
+  // 2025
+  '2025-01-01', // New Year
+  '2025-01-28', '2025-01-29', '2025-01-30', '2025-01-31', '2025-02-01', '2025-02-02', '2025-02-03', '2025-02-04', // CNY
+  '2025-04-04', '2025-04-05', '2025-04-06', // Qingming
+  '2025-05-01', '2025-05-02', '2025-05-03', '2025-05-04', '2025-05-05', // Labor Day
+  '2025-05-31', '2025-06-01', '2025-06-02', // Dragon Boat
+  '2025-10-01', '2025-10-02', '2025-10-03', '2025-10-04', '2025-10-05', '2025-10-06', '2025-10-07', '2025-10-08', // National Day
+  // 2026 (Estimated)
+  '2026-01-01',
+  '2026-02-16', '2026-02-17', '2026-02-18', '2026-02-19', '2026-02-20', '2026-02-21', '2026-02-22', // CNY
+  '2026-04-05', // Qingming
+  '2026-05-01', '2026-05-02', '2026-05-03', // Labor Day
+  '2026-06-19', // Dragon Boat
+  '2026-09-25', // Mid-Autumn
+  '2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05', '2026-10-06', '2026-10-07' // National Day
 ];
 
 export const BookingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -41,9 +60,43 @@ export const BookingProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const closeBooking = () => setIsOpen(false);
 
+  // Helper: Get Today in China Standard Time (UTC+8)
+  const getChinaToday = () => {
+    const now = new Date();
+    // Convert current local time to UTC, then add 8 hours
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const chinaTime = new Date(utc + (3600000 * 8));
+    chinaTime.setHours(0, 0, 0, 0); // Normalized to midnight
+    return chinaTime;
+  };
+
+  const isDateDisabled = (date: Date) => {
+    const chinaToday = getChinaToday();
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+
+    // 1. Past dates (relative to China)
+    if (d.getTime() < chinaToday.getTime()) return true;
+
+    // 2. Weekends (0 = Sunday, 6 = Saturday)
+    const day = d.getDay();
+    if (day === 0 || day === 6) return true;
+
+    // 3. Holidays
+    // Format date as YYYY-MM-DD using local time methods since 'date' is constructed from year/month/day
+    // Note: We need to ensure YYYY-MM-DD matches the strings in CN_HOLIDAYS
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const dayStr = String(d.getDate()).padStart(2, '0');
+    const dateString = `${year}-${month}-${dayStr}`;
+
+    if (CN_HOLIDAYS.includes(dateString)) return true;
+
+    return false;
+  };
+
   const handleSubmit = () => {
     if (selectedDate && selectedSlot) {
-      // Persist the booking to the user profile
       addBooking({
         id: Date.now().toString(),
         date: selectedDate.toISOString(),
@@ -51,198 +104,182 @@ export const BookingProvider: React.FC<{ children: ReactNode }> = ({ children })
         status: 'confirmed',
         createdAt: new Date().toISOString()
       });
-
-      // Show success step
-      setTimeout(() => {
-        setStep('success');
-      }, 300);
+      setStep('success');
     }
   };
 
-  // --- Calendar Render Helpers ---
-  const locale = lang === 'cn' ? 'zh-CN' : 'en-US';
-  const CALENDAR_DAYS = t('calendarDaysShort') as string[];
+  const handleNextMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1));
+  };
 
-  const getDaysInMonth = (date: Date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
+  const handlePrevMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1));
+  };
+
+  const renderCalendar = () => {
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
+    
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const firstDay = new Date(year, month, 1).getDay();
-    return { daysInMonth, firstDay };
-  };
+    const firstDay = new Date(year, month, 1).getDay(); // 0-6
 
-  const { daysInMonth, firstDay } = getDaysInMonth(currentMonth);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+    const days = [];
+    // Empty slots for previous month
+    for (let i = 0; i < firstDay; i++) {
+      days.push(<div key={`empty-${i}`} className="h-10 w-10" />);
+    }
 
-  const changeMonth = (delta: number) => {
-    const newDate = new Date(currentMonth);
-    newDate.setMonth(newDate.getMonth() + delta);
-    setCurrentMonth(newDate);
-  };
+    for (let i = 1; i <= daysInMonth; i++) {
+      const date = new Date(year, month, i);
+      const disabled = isDateDisabled(date);
+      const isSelected = selectedDate?.toDateString() === date.toDateString();
 
-  const isDateDisabled = (day: number) => {
-    const dateToCheck = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-    return dateToCheck < today;
-  };
+      days.push(
+        <button
+          key={i}
+          disabled={disabled}
+          onClick={() => { setSelectedDate(date); setSelectedSlot(null); }}
+          className={`h-10 w-10 rounded-full flex items-center justify-center text-sm font-medium transition-all
+            ${isSelected 
+              ? 'bg-gemini-ultra text-white shadow-lg shadow-gemini-ultra/30' 
+              : disabled 
+                ? 'text-slate-700 cursor-not-allowed' 
+                : 'text-slate-300 hover:bg-white/10 hover:text-white'
+            }
+          `}
+        >
+          {i}
+        </button>
+      );
+    }
 
-  const isSelected = (day: number) => {
-    if (!selectedDate) return false;
-    return (
-      selectedDate.getDate() === day &&
-      selectedDate.getMonth() === currentMonth.getMonth() &&
-      selectedDate.getFullYear() === currentMonth.getFullYear()
-    );
+    return days;
   };
 
   return (
     <BookingContext.Provider value={{ isBookingOpen: isOpen, openBooking, closeBooking }}>
       {children}
       
+      {/* Modal */}
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fade-in">
-          {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={closeBooking} />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-fade-in" onClick={closeBooking} />
           
-          {/* Modal Container */}
-          <div className="relative w-full max-w-2xl bg-navy-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-white/5 bg-white/5">
-              <h2 className="text-xl font-medium text-white tracking-tight">
-                {step === 'success' ? t('bookingConfirmed') : t('scheduleConsultation')}
-              </h2>
-              <button 
-                onClick={closeBooking}
-                className="p-2 rounded-full hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
+          <div className="relative w-full max-w-4xl bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-[fadeIn_0.3s_ease-out] flex flex-col md:flex-row min-h-[500px]">
+            <button onClick={closeBooking} className="absolute top-4 right-4 text-slate-500 hover:text-white z-10">
+              <X size={24} />
+            </button>
 
-            {/* Content */}
-            <div className="p-6 overflow-y-auto custom-scrollbar">
-              {step === 'date' ? (
-                <div className="flex flex-col md:flex-row gap-8">
-                  {/* Left: Calendar */}
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-sm font-semibold text-white">
-                        {currentMonth.toLocaleString(locale, { month: 'long', year: 'numeric' })}
-                      </h3>
-                      <div className="flex gap-1">
-                        <button onClick={() => changeMonth(-1)} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-white disabled:opacity-30" disabled={currentMonth.getMonth() === today.getMonth() && currentMonth.getFullYear() === today.getFullYear()}>
-                          <ChevronLeft size={16} />
-                        </button>
-                        <button onClick={() => changeMonth(1)} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-white">
-                          <ChevronRight size={16} />
-                        </button>
-                      </div>
+            {step === 'date' ? (
+              <>
+                {/* Left: Calendar */}
+                <div className="flex-1 p-8 border-b md:border-b-0 md:border-r border-white/10">
+                  <div className="mb-6">
+                    <h2 className="text-xl font-semibold text-white mb-1">{t('scheduleConsultation')}</h2>
+                    <p className="text-slate-400 text-sm">{t('calendarDaysShort') ? "Timezone: China Standard Time (UTC+8)" : "Select a date for your session"}</p>
+                  </div>
+
+                  <div className="bg-white/5 rounded-2xl p-6 border border-white/5">
+                    <div className="flex items-center justify-between mb-6">
+                      <button onClick={handlePrevMonth} className="p-1 hover:bg-white/10 rounded-full text-slate-400 hover:text-white">
+                        <ChevronLeft size={20} />
+                      </button>
+                      <span className="text-white font-medium">
+                        {currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
+                      </span>
+                      <button onClick={handleNextMonth} className="p-1 hover:bg-white/10 rounded-full text-slate-400 hover:text-white">
+                        <ChevronRight size={20} />
+                      </button>
                     </div>
 
                     <div className="grid grid-cols-7 gap-1 mb-2">
-                      {CALENDAR_DAYS.map(d => (
-                        <div key={d} className="text-center text-[10px] uppercase font-bold text-slate-500 py-1">
-                          {d}
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="grid grid-cols-7 gap-1">
-                      {Array.from({ length: firstDay }).map((_, i) => (
-                        <div key={`empty-${i}`} />
-                      ))}
-                      {Array.from({ length: daysInMonth }).map((_, i) => {
-                        const day = i + 1;
-                        const disabled = isDateDisabled(day);
-                        const selected = isSelected(day);
-                        
-                        return (
-                          <button
-                            key={day}
-                            disabled={disabled}
-                            onClick={() => {
-                              const d = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-                              setSelectedDate(d);
-                              setSelectedSlot(null); // Reset slot on date change
-                            }}
-                            className={`
-                              h-10 w-full rounded-lg text-sm font-medium transition-all duration-200 relative
-                              ${disabled ? 'text-slate-700 cursor-not-allowed' : 'hover:bg-white/10 text-slate-300'}
-                              ${selected ? 'bg-gemini-ultra text-white shadow-[0_0_15px_rgba(66,133,244,0.4)] z-10' : ''}
-                            `}
-                          >
-                            {day}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Right: Time Slots */}
-                  <div className="flex-1 border-t md:border-t-0 md:border-l border-white/10 pt-6 md:pt-0 md:pl-8">
-                    <div className="mb-4">
-                      <h3 className="text-sm font-semibold text-white mb-1">{t('selectTime')}</h3>
-                      <p className="text-xs text-slate-500">
-                        {selectedDate 
-                          ? selectedDate.toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric' })
-                          : t('pleaseSelectDate')}
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                       {TIME_SLOTS.map(slot => (
-                         <button
-                           key={slot}
-                           disabled={!selectedDate}
-                           onClick={() => setSelectedSlot(slot)}
-                           className={`
-                             py-2 px-3 rounded-lg text-xs font-medium border transition-all
-                             ${!selectedDate 
-                                ? 'border-white/5 text-slate-600 cursor-not-allowed' 
-                                : selectedSlot === slot
-                                  ? 'bg-white text-black border-white shadow-[0_0_10px_rgba(255,255,255,0.3)]'
-                                  : 'border-white/10 text-slate-300 hover:border-white/30 hover:bg-white/5'}
-                           `}
-                         >
-                           {slot}
-                         </button>
+                       {/* Weekday headers */}
+                       {(t('calendarDaysShort') as string[]).map((d: string) => (
+                         <div key={d} className="h-10 w-10 flex items-center justify-center text-xs font-bold text-slate-500 uppercase">
+                           {d}
+                         </div>
                        ))}
                     </div>
-                    
-                    <div className="mt-8">
-                      <Button 
-                        variant="gemini" 
-                        size="md"
-                        className="w-full text-sm h-10 group" 
-                        disabled={!selectedDate || !selectedSlot}
-                        onClick={handleSubmit}
-                      >
-                        {t('confirmBooking')}
-                      </Button>
+                    <div className="grid grid-cols-7 gap-1">
+                      {renderCalendar()}
                     </div>
                   </div>
                 </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-10 text-center animate-fade-in">
-                   <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mb-6 text-green-500 border border-green-500/20 shadow-[0_0_30px_rgba(34,197,94,0.2)]">
-                     <CheckCircle size={32} />
-                   </div>
-                   <h3 className="text-2xl font-semibold text-white mb-2">{t('bookingConfirmed')}!</h3>
-                   <p className="text-slate-400 max-w-sm mb-8">
-                     {t('bookingSuccessMsg1')}
-                     <span className="text-white font-medium">{selectedDate?.toLocaleDateString(locale)}</span>
-                     {t('bookingSuccessMsg2')}
-                     <span className="text-white font-medium">{selectedSlot}</span>
-                     {t('bookingSuccessMsg3')}
-                   </p>
-                   <Button variant="outline" onClick={closeBooking} className="border-white/10">
-                     {t('backToBrowsing')}
-                   </Button>
-                </div>
-              )}
-            </div>
 
+                {/* Right: Slots */}
+                <div className="w-full md:w-80 bg-navy-900/50 p-8 flex flex-col">
+                  <h3 className="text-lg font-medium text-white mb-6 flex items-center gap-2">
+                    <Clock size={18} /> {t('selectTime')}
+                  </h3>
+
+                  <div className="flex-grow space-y-3">
+                    {!selectedDate ? (
+                      <div className="h-full flex flex-col items-center justify-center text-slate-500 text-center">
+                        <CalendarIcon size={32} className="mb-3 opacity-50" />
+                        <p className="text-sm">{t('pleaseSelectDate')}</p>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-sm text-gemini-ultra mb-4 font-medium flex items-center gap-2">
+                          <CheckCircle size={14} /> {selectedDate.toLocaleDateString()}
+                        </p>
+                        {TIME_SLOTS.map(slot => (
+                          <button
+                            key={slot}
+                            onClick={() => setSelectedSlot(slot)}
+                            className={`w-full py-3 px-4 rounded-xl text-sm font-medium border transition-all text-left flex justify-between items-center group
+                              ${selectedSlot === slot 
+                                ? 'bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.3)]' 
+                                : 'bg-white/5 text-slate-300 border-white/5 hover:bg-white/10 hover:border-white/20'
+                              }
+                            `}
+                          >
+                            {slot}
+                            {selectedSlot === slot && <CheckCircle size={16} className="text-black" />}
+                          </button>
+                        ))}
+                      </>
+                    )}
+                  </div>
+                  
+                  {/* Timezone Indicator */}
+                  <div className="mt-6 pt-4 border-t border-white/10">
+                    <div className="flex items-center gap-2 text-xs text-slate-500 justify-center">
+                        <Globe size={12} />
+                        <span>All times are displayed in CST (UTC+8)</span>
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <Button 
+                      onClick={handleSubmit} 
+                      disabled={!selectedDate || !selectedSlot}
+                      variant="gemini"
+                      className="w-full font-bold"
+                    >
+                      {t('confirmBooking')}
+                    </Button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center p-12 text-center animate-fade-in">
+                <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mb-6 border border-green-500/20">
+                  <CheckCircle size={40} className="text-green-500" />
+                </div>
+                <h2 className="text-3xl font-semibold text-white mb-4">{t('bookingConfirmed')}</h2>
+                <p className="text-slate-400 max-w-md leading-relaxed mb-8">
+                  {t('bookingSuccessMsg1')}
+                  <span className="text-white font-medium">{selectedDate?.toLocaleDateString()}</span>
+                  {t('bookingSuccessMsg2')}
+                  <span className="text-white font-medium">{selectedSlot}</span> (CST)
+                  {t('bookingSuccessMsg3')}
+                </p>
+                <Button onClick={closeBooking} variant="outline" className="border-white/10">
+                  {t('backToBrowsing')}
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -3,7 +3,7 @@ import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import { getData } from '../data';
 import { ContentBlock, LibraryItem } from '../types';
 import { Badge, Button, GlassCard, Tag } from '../components/ui';
-import { Play, Pause, Share2, ArrowLeft, ArrowRight, Bookmark, Clock } from 'lucide-react';
+import { Play, Pause, Share2, ArrowLeft, ArrowRight, Bookmark, Clock, Circle } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useBooking } from '../contexts/BookingContext';
@@ -94,8 +94,6 @@ const ResourceDetail: React.FC = () => {
 
   // Determine item type characteristics
   const isCase = item?.type === 'case';
-  // isReport handles all non-case types for generic "report-like" display logic
-  const isReport = item?.type === 'report' || item?.type === 'methodology' || item?.type === 'announcement';
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -110,10 +108,21 @@ const ResourceDetail: React.FC = () => {
     return <div className="text-center py-20 text-white">Resource not found</div>;
   }
 
-  // Recommendation Logic: If current is case, recommend cases. If not, recommend others.
+  // Recommendation Logic
   const recommendedItems = isCase 
     ? data.cases.filter(c => c.slug !== slug).slice(0, 3)
     : [...data.reports, ...data.methodologies].filter(n => n.slug !== slug).slice(0, 3);
+
+  // Helper to format type label
+  const getTypeLabel = (type: string) => {
+    switch(type) {
+      case 'case': return 'Case Study';
+      case 'report': return 'Report';
+      case 'methodology': return 'Methodology';
+      case 'announcement': return 'Announcement';
+      default: return 'Resource';
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 min-h-screen">
@@ -127,29 +136,24 @@ const ResourceDetail: React.FC = () => {
           {/* Header */}
           <div className="mb-10 space-y-6">
             <div className="flex flex-wrap gap-2">
-              {item.tags.map(tag => (
-                <Badge key={tag} className={isCase ? "bg-gemini-ultra/10 text-gemini-ultra border-gemini-ultra/20" : "bg-white/5 text-slate-200 border-white/10"}>
-                    {tag}
-                </Badge>
-              ))}
+               <Badge className="bg-gemini-ultra/10 text-gemini-ultra border-gemini-ultra/20">
+                    {getTypeLabel(item.type)}
+               </Badge>
             </div>
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-white leading-[1.1] tracking-tight">{item.title}</h1>
             <p className="text-xl text-slate-400 font-light leading-relaxed max-w-2xl">{item.subtitle}</p>
             
             <div className="flex items-center gap-6 text-xs text-slate-500 border-t border-white/10 pt-6 font-mono uppercase tracking-wide">
-              <span className="flex items-center gap-2">
-                  {isCase ? (
-                      <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                  ) : (
-                      <Clock size={14} />
-                  )}
+              <span className="flex items-center gap-2 text-slate-300">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
                   {item.readTime} {t('readTime')}
               </span>
               <span>{t('updated')} {item.updatedAt}</span>
             </div>
           </div>
 
-          {isCase && <AudioPlayer label={t('listen')} />}
+          {/* Audio Player - Unified for all types */}
+          <AudioPlayer label={t('listen')} />
 
           {/* Article Body */}
           <div className="prose prose-invert prose-lg max-w-none prose-headings:text-white prose-p:text-slate-300 prose-strong:text-white">
@@ -163,9 +167,10 @@ const ResourceDetail: React.FC = () => {
         <div className="lg:col-span-4 space-y-6 animate-fade-in animation-delay-200">
           <div className="sticky top-24 space-y-4">
             
-            {/* Context / Metadata Card */}
-            <div className="bg-navy-900/50 border border-white/10 rounded-xl p-5 backdrop-blur-xl">
-              {isCase && item.clientIntro && (
+            {/* Unified Context / Metadata Card */}
+            <div className="bg-navy-900/50 border border-white/10 rounded-xl p-6 backdrop-blur-xl">
+              {/* Show Client Intro if available (Cases) */}
+              {item.clientIntro && (
                   <>
                     <h3 className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-3">{t('clientProfile')}</h3>
                     <p className="text-sm text-slate-300 leading-relaxed mb-6 font-medium">{item.clientIntro}</p>
@@ -173,28 +178,15 @@ const ResourceDetail: React.FC = () => {
                   </>
               )}
 
+              {/* Show Category for everyone */}
               <h3 className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-3">{t('scenario')}</h3>
               <div className="flex flex-wrap gap-2">
-                {item.tags.map(tag => (
-                  <Tag key={tag} label={tag} />
-                ))}
+                <Tag label={getTypeLabel(item.type)} />
               </div>
             </div>
 
-            {/* Dive Deeper CTA (Non-Case only) */}
-            {!isCase && (
-                <div className="bg-gradient-to-br from-indigo-900/20 to-purple-900/20 border border-white/10 rounded-xl p-6 backdrop-blur-xl relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-gemini-ultra/20 rounded-full blur-[40px] -z-10 group-hover:bg-gemini-ultra/30 transition-colors" />
-                    <h3 className="text-white font-bold text-base mb-2">{t('enjoyed')}</h3>
-                    <p className="text-slate-400 text-xs leading-relaxed mb-6">{t('diveDeeper')}</p>
-                    <Button onClick={() => navigate('/library')} variant="outline" className="w-full text-sm border-white/20 hover:bg-white/5">
-                        {t('browseCases')}
-                    </Button>
-                </div>
-            )}
-
             {/* Actions Card */}
-            <div className={isCase ? "bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-xl p-5 backdrop-blur-xl space-y-3" : "bg-white/5 border border-white/10 rounded-xl p-5 backdrop-blur-xl space-y-3"}>
+            <div className="bg-white/5 border border-white/10 rounded-xl p-5 backdrop-blur-xl">
                  <div className="grid grid-cols-2 gap-3">
                    <button className="h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/5 text-sm gap-2 transition-all font-medium">
                      <Share2 size={16} /> {t('share')}
@@ -208,12 +200,19 @@ const ResourceDetail: React.FC = () => {
                  </div>
             </div>
 
-            {/* Booking CTA */}
-            <div className="bg-gradient-to-br from-gemini-ultra/20 to-purple-900/20 border border-white/10 rounded-xl p-5 backdrop-blur-xl relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gemini-ultra/20 rounded-full blur-[40px] -z-10 group-hover:bg-gemini-ultra/30 transition-colors" />
-                <h3 className="text-white font-bold text-sm mb-4 leading-relaxed relative z-10">{t('ctaTitle')}</h3>
-                <Button onClick={openBooking} variant="gemini" className="w-full text-xs font-bold h-9 group">
-                    {t('btnBookDemo')} <ArrowRight size={14} />
+            {/* Unified Booking CTA Card */}
+            <div className="bg-gradient-to-br from-gemini-ultra/10 to-purple-900/20 border border-white/10 rounded-xl p-6 backdrop-blur-xl relative overflow-hidden group">
+                {/* Glow Effect */}
+                <div className="absolute top-0 right-0 w-40 h-40 bg-gemini-ultra/20 rounded-full blur-[50px] -z-10 group-hover:bg-gemini-ultra/30 transition-colors" />
+                
+                <h3 className="text-white font-bold text-base mb-2 leading-tight relative z-10">
+                    {t('ctaTitle')}
+                </h3>
+                <p className="text-xs text-slate-400 mb-6 relative z-10 leading-relaxed">
+                    Unlock the full potential of your team with our AI-native methodologies.
+                </p>
+                <Button onClick={openBooking} variant="gemini" className="w-full text-xs font-bold h-10 group shadow-lg shadow-black/20">
+                    {t('btnBookDemo')} <ArrowRight size={14} className="ml-1" />
                 </Button>
             </div>
 
@@ -242,7 +241,7 @@ const ResourceDetail: React.FC = () => {
                  </div>
                  <div>
                     <h4 className="font-bold text-white text-sm mb-1 group-hover:text-primary-400 transition-colors line-clamp-2 leading-snug">{c.title}</h4>
-                    <span className="text-[10px] text-slate-500 uppercase tracking-wider">{isCase ? t('cases') : c.tags[0]}</span>
+                    <span className="text-[10px] text-slate-500 uppercase tracking-wider">{getTypeLabel(c.type)}</span>
                  </div>
                </div>
             </GlassCard>
