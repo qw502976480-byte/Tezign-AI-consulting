@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import { getData } from '../data';
 import { ContentBlock, LibraryItem } from '../types';
-import { Badge, Button, GlassCard, Tag } from '../components/ui';
+import { Badge, Button, GlassCard, Tag, ContentTag } from '../components/ui';
 import { Play, Pause, Share2, ArrowLeft, ArrowRight, Bookmark, Clock, Circle } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -116,10 +116,10 @@ const ResourceDetail: React.FC = () => {
   // Helper to format type label
   const getTypeLabel = (type: string) => {
     switch(type) {
-      case 'case': return 'Case Study';
-      case 'report': return 'Report';
-      case 'methodology': return 'Methodology';
-      case 'announcement': return 'Announcement';
+      case 'case': return t('typeCase');
+      case 'report': return t('typeReport');
+      case 'methodology': return t('typeMethod');
+      case 'announcement': return t('typeAnnounce');
       default: return 'Resource';
     }
   };
@@ -136,9 +136,10 @@ const ResourceDetail: React.FC = () => {
           {/* Header */}
           <div className="mb-10 space-y-6">
             <div className="flex flex-wrap gap-2">
-               <Badge className="bg-gemini-ultra/10 text-gemini-ultra border-gemini-ultra/20">
-                    {getTypeLabel(item.type)}
-               </Badge>
+               <ContentTag label={getTypeLabel(item.type) as string} type="category" />
+               {item.tags.slice(0, 2).map(tag => (
+                   <ContentTag key={tag} label={tag} type="context" />
+               ))}
             </div>
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-white leading-[1.1] tracking-tight">{item.title}</h1>
             <p className="text-xl text-slate-400 font-light leading-relaxed max-w-2xl">{item.subtitle}</p>
@@ -181,7 +182,9 @@ const ResourceDetail: React.FC = () => {
               {/* Show Category for everyone */}
               <h3 className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-3">{t('scenario')}</h3>
               <div className="flex flex-wrap gap-2">
-                <Tag label={getTypeLabel(item.type)} />
+                {item.tags.map(tag => (
+                    <ContentTag key={tag} label={tag} type="context" />
+                ))}
               </div>
             </div>
 

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth, User as UserType } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { Button, Badge, Input } from '../components/ui';
+import { Button, Badge, Input, ContentTag } from '../components/ui';
 import { User, Bookmark, Settings, ArrowRight, Shield, Bell, Lock, CheckCircle, AlertCircle, Camera, Trash2, CheckSquare, Square, MessageSquare } from 'lucide-react';
 import { getData } from '../data';
 
@@ -130,6 +130,15 @@ const UserProfile: React.FC = () => {
       }
   };
 
+  const getTypeLabel = (type: string) => {
+    switch(type) {
+      case 'case': return t('typeCase');
+      case 'report': return t('typeReport');
+      case 'methodology': return t('typeMethod');
+      case 'announcement': return t('typeAnnounce');
+      default: return 'Resource';
+    }
+  };
 
   const tabs = [
     { id: 'account', label: t('account'), icon: User },
@@ -454,7 +463,7 @@ const UserProfile: React.FC = () => {
                                     <h3 className="font-medium text-slate-200 group-hover:text-white line-clamp-1 transition-colors">{item.title}</h3>
                                     <p className="text-sm text-slate-500 line-clamp-1 mt-1">{item.subtitle}</p>
                                     <div className="flex gap-2 mt-2">
-                                        <Badge>{item.type}</Badge>
+                                        <ContentTag label={getTypeLabel(item.type) as string} type="category" />
                                     </div>
                                 </div>
 

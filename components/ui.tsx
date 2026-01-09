@@ -105,6 +105,18 @@ export const Badge: React.FC<{ children: React.ReactNode; className?: string }> 
   </span>
 );
 
+export const ContentTag: React.FC<{ label: string; type?: 'category' | 'context'; className?: string }> = ({ label, type = 'context', className = '' }) => {
+  const styles = type === 'category'
+    ? "bg-white text-black border border-white font-bold shadow-[0_0_10px_rgba(255,255,255,0.2)]" // Primary/Category style
+    : "bg-white/5 text-slate-300 border border-white/10 hover:bg-white/10"; // Secondary/Context style
+
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] tracking-wide backdrop-blur-md transition-colors ${styles} ${className}`}>
+      {label}
+    </span>
+  );
+};
+
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   variant?: 'default' | 'ghost';
 }

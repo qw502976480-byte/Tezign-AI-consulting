@@ -10,6 +10,12 @@ interface LanguageContextType {
 
 const translations = {
   en: {
+    // Content Types (Singular for Tags)
+    typeCase: "Case Study",
+    typeReport: "Report",
+    typeMethod: "Methodology",
+    typeAnnounce: "Announcement",
+
     // Nav & General
     resources: "Resources",
     cases: "Cases",
@@ -66,8 +72,8 @@ const translations = {
     enterPassword: "Enter new password",
     
     // Homepage Hero
-    heroTitle: "Making AI-native consulting understandable and repeatable",
-    heroSubtitle: "We translate AI scenarios, ways of working, and operating mechanisms into business practices that teams can understand, discuss, and reuse.",
+    heroTitle: "Making AI a lasting enterprise capability",
+    heroSubtitle: "We use an AI-native consulting approach to help enterprises build ways of working that are understandable, repeatable, and continuously evolving.",
     btnBookDemo: "Book a scenario session",
     
     // Interactive Search
@@ -216,6 +222,12 @@ const translations = {
     calendarDaysShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
   },
   cn: {
+    // Content Types
+    typeCase: "案例",
+    typeReport: "报告",
+    typeMethod: "方法论",
+    typeAnnounce: "公告",
+
     // Nav & General
     resources: "资源",
     cases: "案例",
@@ -272,8 +284,8 @@ const translations = {
     enterPassword: "输入新密码",
 
     // Homepage Hero
-    heroTitle: "让 AI-native consulting 变得可理解、可复制",
-    heroSubtitle: "我们将 AI 场景诊断、工作方式设计与运行机制，转化为可以被理解、被讨论、被复用的业务实践。",
+    heroTitle: "让 AI 成为企业的长期能力",
+    heroSubtitle: "我们用 AI-native 的咨询方法，帮助企业建立可理解、可复制、可持续演进的 AI 工作方式。",
     btnBookDemo: "预约场景沟通",
 
     // Interactive Search

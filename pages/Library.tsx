@@ -5,7 +5,7 @@ import { Search, ArrowUpRight, Mic, ArrowUp, Bot, Sparkles, ChevronLeft, Chevron
 import { LibraryItem } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useBooking } from '../contexts/BookingContext';
-import { Input, Button } from '../components/ui';
+import { Input, Button, ContentTag } from '../components/ui';
 
 const ITEMS_PER_PAGE = 12;
 
@@ -98,6 +98,16 @@ const Library: React.FC = () => {
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
     window.scrollTo({ top: 400, behavior: 'smooth' });
+  };
+
+  const getTypeLabel = (type: string) => {
+    switch(type) {
+      case 'case': return t('typeCase');
+      case 'report': return t('typeReport');
+      case 'methodology': return t('typeMethod');
+      case 'announcement': return t('typeAnnounce');
+      default: return 'Resource';
+    }
   };
 
   return (
@@ -211,12 +221,15 @@ const Library: React.FC = () => {
               </div>
 
               <div className="flex flex-col gap-3 px-1">
+                {/* Updated Tagging System */}
                 <div className="flex flex-wrap gap-2">
+                   {/* 1. Category Tag (Fixed) */}
+                   <ContentTag label={getTypeLabel(item.type) as string} type="category" />
+                   
+                   {/* 2 & 3. Context Tags (Industry/Scenario) - Max 2 */}
                    {item.tags.slice(0, 2).map(tag => (
-                    <span key={tag} className="text-[10px] font-semibold tracking-wider text-slate-200 border border-white/20 px-2.5 py-1 rounded-full bg-white/5 backdrop-blur-md">
-                      {tag}
-                    </span>
-                  ))}
+                      <ContentTag key={tag} label={tag} type="context" />
+                   ))}
                 </div>
 
                 <h3 className="text-xl font-medium text-slate-200 group-hover:text-white transition-colors leading-snug">
