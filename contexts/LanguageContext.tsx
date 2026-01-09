@@ -438,7 +438,7 @@ const translations = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [lang, setLang] = useState<Language>('en');
+  const [lang, setLang] = useState<Language>('cn'); // Default set to 'cn'
 
   const toggleLang = () => {
     setLang(prev => prev === 'en' ? 'cn' : 'en');

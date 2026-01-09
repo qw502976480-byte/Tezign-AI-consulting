@@ -192,9 +192,6 @@ const InteractiveBlob: React.FC = () => {
   );
 };
 
-// --- Interactive Boids Simulation Component (Touch Supported) ---
-// (Kept unchanged for brevity, same as previous file)
-
 const Homepage: React.FC = () => {
   const navigate = useNavigate();
   const { lang, t } = useLanguage();
@@ -496,6 +493,10 @@ const Homepage: React.FC = () => {
                      <div className="flex-grow pt-1">
                         <div className="flex flex-wrap gap-2 mb-2">
                            <ContentTag label={getTypeLabel(item.type) as string} type="category" />
+                           {/* Added context tags here to match design requirements */}
+                           {item.tags.slice(0, 2).map(tag => (
+                             <ContentTag key={tag} label={tag} type="context" />
+                           ))}
                         </div>
                         <h4 className="text-base font-medium text-slate-200 mb-2 group-hover:text-primary-400 transition-colors line-clamp-2">{item.title}</h4>
                         <div className="flex items-center gap-3 text-xs text-slate-500 font-mono">
