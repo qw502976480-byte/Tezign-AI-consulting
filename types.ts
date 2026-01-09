@@ -20,6 +20,10 @@ export interface LibraryItem {
   tags: string[];
   // Optional specific fields
   clientIntro?: string; // For cases
+  audioData?: { // For pre-generated audio
+    en: string;
+    cn: string;
+  };
 }
 
 export interface UserAccess {

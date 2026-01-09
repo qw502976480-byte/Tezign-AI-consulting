@@ -1,12 +1,43 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import { getData } from '../data';
 import { ContentBlock, LibraryItem } from '../types';
-import { Badge, Button, GlassCard, Tag, ContentTag } from '../components/ui';
-import { Play, Pause, Share2, ArrowLeft, ArrowRight, Bookmark, Clock, Circle } from 'lucide-react';
+import { Button, ContentTag } from '../components/ui';
+import { Play, Pause, Share2, ArrowLeft, ArrowRight, Bookmark, Loader2 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useBooking } from '../contexts/BookingContext';
+
+// --- Audio Decoding Helpers ---
+function decode(base64: string) {
+  const binaryString = atob(base64);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+}
+
+async function decodeAudioData(
+  data: Uint8Array,
+  ctx: AudioContext,
+  sampleRate: number,
+  numChannels: number,
+): Promise<AudioBuffer> {
+  const dataInt16 = new Int16Array(data.buffer);
+  const frameCount = dataInt16.length / numChannels;
+  const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
+
+  for (let channel = 0; channel < numChannels; channel++) {
+    const channelData = buffer.getChannelData(channel);
+    for (let i = 0; i < frameCount; i++) {
+      channelData[i] = dataInt16[i * numChannels + channel] / 32768.0;
+    }
+  }
+  return buffer;
+}
+
 
 // --- Shared Components ---
 
@@ -57,27 +88,6 @@ const ContentRenderer: React.FC<{ block: ContentBlock }> = ({ block }) => {
   }
 };
 
-const AudioPlayer: React.FC<{ label: string }> = ({ label }) => {
-  const [playing, setPlaying] = useState(false);
-  
-  return (
-    <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-full p-2 pr-6 w-fit mb-10 backdrop-blur-md hover:bg-white/10 transition-colors cursor-pointer group" onClick={() => setPlaying(!playing)}>
-      <button 
-        className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center group-hover:scale-105 transition-transform"
-      >
-        {playing ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" className="ml-1" />}
-      </button>
-      <div className="flex flex-col gap-1 min-w-[140px]">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-300 group-hover:text-white transition-colors">{label}</span>
-        <div className="h-1 bg-white/10 rounded-full overflow-hidden w-full">
-          <div className={`h-full bg-gradient-to-r from-gemini-ultra via-gemini-pro to-gemini-nano w-1/3 ${playing ? 'animate-pulse' : ''}`} />
-        </div>
-      </div>
-      <span className="text-[10px] text-slate-500 font-mono">03:45</span>
-    </div>
-  );
-};
-
 // --- Main Component ---
 
 const ResourceDetail: React.FC = () => {
@@ -92,12 +102,96 @@ const ResourceDetail: React.FC = () => {
   const item = data.all.find(i => i.slug === slug);
   const isBookmarked = user?.bookmarks?.includes(slug || '');
 
+  // Audio state
+  const [audioState, setAudioState] = useState<'idle' | 'generating' | 'playing'>('idle');
+  const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const audioSourceRef = useRef<AudioBufferSourceNode | null>(null);
+
   // Determine item type characteristics
   const isCase = item?.type === 'case';
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [slug]);
+    // Reset audio state when slug or language changes
+    if (audioSourceRef.current) audioSourceRef.current.stop();
+    if (audioContextRef.current) audioContextRef.current.close();
+    setAudioState('idle');
+    setAudioBuffer(null);
+    audioContextRef.current = null;
+    audioSourceRef.current = null;
+  }, [slug, lang]);
+
+  const handleAudioAction = async () => {
+    if (audioState === 'generating' || !item || !item.audioData) return;
+
+    if (audioState === 'playing') {
+      if (audioSourceRef.current) {
+        audioSourceRef.current.stop();
+      }
+      setAudioState('idle');
+      return;
+    }
+
+    // Initialize AudioContext on first play
+    if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioContext) {
+        audioContextRef.current = new AudioContext({ sampleRate: 24000 });
+      } else {
+        console.error("Web Audio API is not supported.");
+        return;
+      }
+    }
+    
+    const play = (buffer: AudioBuffer) => {
+      const audioContext = audioContextRef.current;
+      if (!audioContext) return;
+      
+      if (audioSourceRef.current) {
+        audioSourceRef.current.disconnect();
+      }
+      
+      const source = audioContext.createBufferSource();
+      source.buffer = buffer;
+      source.connect(audioContext.destination);
+      source.start(0);
+
+      source.onended = () => {
+        setAudioState('idle');
+        audioSourceRef.current = null;
+      };
+
+      audioSourceRef.current = source;
+      setAudioState('playing');
+    };
+
+    // If audio is already decoded in component state, just play it
+    if (audioBuffer) {
+      play(audioBuffer);
+      return;
+    }
+
+    // Get pre-generated base64 audio data from the item based on current language
+    const base64Audio = item.audioData[lang];
+    if (!base64Audio || !audioContextRef.current) {
+        console.error("Pre-generated audio data not found for this resource and language.");
+        return;
+    }
+
+    setAudioState('generating'); // Use this state for 'decoding'
+    try {
+      const decodedBytes = decode(base64Audio);
+      const buffer = await decodeAudioData(decodedBytes, audioContextRef.current, 24000, 1);
+      
+      setAudioBuffer(buffer); // Cache decoded buffer in component state for re-plays
+      play(buffer);
+
+    } catch (error) {
+      console.error("Error decoding pre-generated audio:", error);
+      setAudioState('idle');
+    }
+  };
 
   if (!isAuthenticated) {
     const path = window.location.hash.slice(1); // Get current path from hash router
@@ -121,6 +215,14 @@ const ResourceDetail: React.FC = () => {
       case 'methodology': return t('typeMethod');
       case 'announcement': return t('typeAnnounce');
       default: return 'Resource';
+    }
+  };
+
+  const getAudioStatusText = () => {
+    switch(audioState) {
+      case 'generating': return t('audioStatusLoading');
+      case 'playing': return t('audioStatusPlaying');
+      default: return t('audioStatusDefault');
     }
   };
 
@@ -153,8 +255,30 @@ const ResourceDetail: React.FC = () => {
             </div>
           </div>
 
-          {/* Audio Player - Unified for all types */}
-          <AudioPlayer label={t('listen')} />
+          {/* Audio Player */}
+          <div 
+            className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-full p-2 pr-6 w-fit mb-10 backdrop-blur-md hover:bg-white/10 transition-colors cursor-pointer group" 
+            onClick={handleAudioAction}
+            aria-label="Listen to article summary"
+            role="button"
+            tabIndex={0}
+          >
+            <button 
+              className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center group-hover:scale-105 transition-transform"
+              disabled={audioState === 'generating'}
+            >
+              {audioState === 'generating' && <Loader2 size={18} className="animate-spin" />}
+              {audioState === 'playing' && <Pause size={18} fill="currentColor" />}
+              {audioState === 'idle' && <Play size={18} fill="currentColor" className="ml-1" />}
+            </button>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-300 group-hover:text-white transition-colors">{t('listen')}</span>
+              <span className="text-xs text-slate-500 font-mono mt-0.5">
+                  {getAudioStatusText()}
+              </span>
+            </div>
+          </div>
+
 
           {/* Article Body */}
           <div className="prose prose-invert prose-lg max-w-none prose-headings:text-white prose-p:text-slate-300 prose-strong:text-white">
@@ -228,18 +352,15 @@ const ResourceDetail: React.FC = () => {
         <h3 className="text-lg font-bold text-white mb-8 tracking-wide uppercase">{t('recommended')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {recommendedItems.map(c => (
-            <GlassCard 
+            <div 
               key={c.slug} 
-              className="group cursor-pointer border-white/5 hover:border-white/10 transition-all duration-300" 
-              hoverEffect={true} 
-              noPadding={true}
+              className="group cursor-pointer bg-navy-900/90 rounded-2xl overflow-hidden border border-white/5 hover:border-white/10 transition-all duration-300"
               onClick={() => {
                 navigate(`/resource/${c.slug}`);
-                window.scrollTo(0, 0);
               }}
             >
                <div className="flex items-center p-4 gap-4">
-                 <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-navy-800">
+                 <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-navy-800 border border-white/5">
                    <img src={c.coverImageUrl} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" alt="" />
                  </div>
                  <div>
@@ -247,7 +368,7 @@ const ResourceDetail: React.FC = () => {
                     <span className="text-[10px] text-slate-500 uppercase tracking-wider">{getTypeLabel(c.type)}</span>
                  </div>
                </div>
-            </GlassCard>
+            </div>
           ))}
         </div>
       </div>

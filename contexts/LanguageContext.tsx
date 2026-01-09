@@ -208,6 +208,9 @@ const translations = {
     diveDeeper: "Dive deeper into our strategic case studies to see how these signals apply to real business problems.",
     browseCases: "Browse Cases",
     listen: "Listen to summary",
+    audioStatusDefault: "Ready to play",
+    audioStatusLoading: "Loading audio...",
+    audioStatusPlaying: "Playing summary...",
 
     // Booking Modal
     scheduleConsultation: "Schedule a Consultation",
@@ -285,7 +288,7 @@ const translations = {
 
     // Homepage Hero
     heroTitle: "让 AI 成为企业的长期能力",
-    heroSubtitle: "我们用 AI-native 的咨询方法，帮助企业建立可理解、可复制、可持续演进的 AI 工作方式。",
+    heroSubtitle: "我们应用 AI-native 咨询，为企业塑造全新的工作方式：它易于理解、便于复制，并具备自我演进的能力。",
     btnBookDemo: "预约场景沟通",
 
     // Interactive Search
@@ -420,6 +423,9 @@ const translations = {
     diveDeeper: "深入了解我们的战略案例，看这些信号如何应用于实际商业问题。",
     browseCases: "浏览案例",
     listen: "收听摘要",
+    audioStatusDefault: "准备播放",
+    audioStatusLoading: "正在加载...",
+    audioStatusPlaying: "正在播放...",
 
     // Booking Modal
     scheduleConsultation: "预约咨询",
